@@ -1,8 +1,6 @@
 # pylint: disable=R,C,E1101
 from collections import namedtuple
-from cupy.cuda import function  # pylint: disable=E0401
-from pynvrtc.compiler import Program  # pylint: disable=E0401
-
+import cupy as cp  # pylint: disable=E0401
 
 CUDA_NUM_THREADS = 1024
 CUDA_MAX_GRID_DIM = 2**16 - 1
@@ -15,13 +13,17 @@ def get_blocks(n, num_threads):
 
 Stream = namedtuple('Stream', ['ptr'])
 
-
-def compile_kernel(kernel, filename, functioname):
-    program = Program(kernel, filename)
-    ptx = program.compile()
-
-    m = function.Module()
-    m.load(bytes(ptx.encode()))
-
-    f = m.get_function(functioname)
-    return f
+def compile_kernel(kernel, filename, functionname):
+    """
+    Compile a CUDA kernel using CuPy's built-in compilation.
+    
+    Args:
+        kernel (str): CUDA kernel source code
+        filename (str): Name for the kernel (for debugging/identification)
+        functionname (str): Name of the kernel function
+    
+    Returns:
+        cupy.RawKernel: Compiled kernel function
+    """
+    # Use CuPy's RawKernel for direct CUDA compilation
+    return cp.RawKernel(kernel, functionname)
